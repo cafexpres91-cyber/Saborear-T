@@ -15,11 +15,11 @@ const MENU = {
     emoji: "🥟",
     intro: "Masa de pizza cerrada y horneada, rellena de nuestras especialidades. Porción personal, acompañada de papas o espagueti (blanco o rojo).",
     items: [
-      { id: "cal-hawaiano", name: "Calzone Hawaiano", desc: "Salsa de la casa, jamón y piña.", variants: [{ label: "Personal", price: 155 }] },
-      { id: "cal-elote", name: "Calzone Elote", desc: "Salsa de la casa, pollo a la plancha en cubos y elote.", variants: [{ label: "Personal", price: 155 }] },
-      { id: "cal-champi", name: "Calzone Champiñones", desc: "Salsa de la casa, pollo a la plancha en cubos y champiñones.", variants: [{ label: "Personal", price: 155 }] },
-      { id: "cal-poblano", name: "Calzone Poblano", desc: "Crema poblana con pollo a la plancha en cubos.", variants: [{ label: "Personal", price: 155 }] },
-      { id: "cal-chipotle", name: "Calzone Chipotle", desc: "Crema de chipotle con pollo a la plancha en cubos.", variants: [{ label: "Personal", price: 155 }] },
+      { id: "cal-hawaiano", name: "Calzones Hawaiano", desc: "Salsa de la casa, jamón y piña.", variants: [{ label: "Personal", price: 155 }] },
+      { id: "cal-elote", name: "Calzones Elote", desc: "Salsa de la casa, pollo a la plancha en cubos y elote.", variants: [{ label: "Personal", price: 155 }] },
+      { id: "cal-champi", name: "Calzones Champiñones", desc: "Salsa de la casa, pollo a la plancha en cubos y champiñones.", variants: [{ label: "Personal", price: 155 }] },
+      { id: "cal-poblano", name: "Calzones Poblano", desc: "Crema poblana con pollo a la plancha en cubos.", variants: [{ label: "Personal", price: 155 }] },
+      { id: "cal-chipotle", name: "Calzones Chipotle", desc: "Crema de chipotle con pollo a la plancha en cubos.", variants: [{ label: "Personal", price: 155 }] },
     ],
   },
 
@@ -141,15 +141,23 @@ const PIZZA_CONFIG = {
       { name: "Hawaiana", desc: "Base de salsa de la casa con queso, piña y jamón." },
     ],
   },
-  nota: "Tradicional: hasta 2 ingredientes (Chica, Mediana, Grande) y hasta 4 en Mega. Especialidad: hasta 2 recetas combinadas (Chica, Mediana, Grande) y hasta 4 en Mega.",
+  mixta: {
+    intro: "Combina lo mejor de ambos mundos: ingredientes tradicionales y una especialidad de la casa en la misma pizza.",
+    sizes: [
+      { key: "mediana", label: "Mediana", price: 220, maxTrad: 1, maxEsp: 1 },
+      { key: "grande", label: "Grande", price: 260, maxTrad: 1, maxEsp: 1 },
+      { key: "megaCuadrada", label: "Mega Cuadrada", price: 350, maxTrad: 2, maxEsp: 2 },
+    ],
+  },
+  nota: "Tradicional: hasta 2 ingredientes (Chica, Mediana, Grande) y hasta 4 en Mega. Especialidad: hasta 2 recetas combinadas (Chica, Mediana, Grande) y hasta 4 en Mega. Mixta: combina ingredientes tradicionales y especialidades en una sola pizza.",
 };
 
 /* ---------- Armador de Ensalada ---------- */
 const SALAD_CONFIG = {
   sizes: [
-    { key: "chica", label: "Chica", price: 95, proteinas: 1, toppings: 2 },
-    { key: "mediana", label: "Mediana", price: 120, proteinas: 1, toppings: 3 },
-    { key: "grande", label: "Grande", price: 160, proteinas: 2, toppings: 4 },
+    { key: "chica", label: "Ensalada Chica", price: 95, proteinas: 1, toppings: 2 },
+    { key: "mediana", label: "Ensalada Mediana", price: 120, proteinas: 1, toppings: 3 },
+    { key: "grande", label: "Ensalada Grande", price: 160, proteinas: 2, toppings: 4 },
   ],
   bases: ["Base Lechuga", "Base Lechuga y Espinaca"],
   proteinas: ["Queso Panela", "Pollo", "Atún", "Manchego", "Jamón de Pavo", "Salchicha de Pavo", "Huevo Duro"],
