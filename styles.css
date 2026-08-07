@@ -209,6 +209,12 @@ h1,h2,h3{font-family:var(--font-display);margin:0;}
 .chip.selected{background:var(--green-deep); border-color:var(--green-deep); color:#fff;}
 .chip.disabled{opacity:0.35; pointer-events:none;}
 .chip-note{font-size:0.78rem; color:var(--ink-soft); margin-top:6px;}
+.comment-input{
+  width:100%; border:1.5px solid var(--line); border-radius:var(--radius-s);
+  padding:10px 12px; font-size:0.88rem; color:var(--ink); resize:none;
+  font-family:var(--font-body);
+}
+.comment-input:focus{outline:none; border-color:var(--green-leaf);}
 
 .size-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px;}
 .size-card{
@@ -281,6 +287,7 @@ h1,h2,h3{font-family:var(--font-display);margin:0;}
 }
 .cart-line-top{display:flex; justify-content:space-between; gap:8px; font-weight:700;}
 .cart-line-detail{color:var(--ink-soft); font-size:0.76rem; margin-top:3px; line-height:1.5;}
+.cart-line-comment{color:var(--brown); font-size:0.76rem; margin-top:4px; font-style:italic; font-family:var(--font-body);}
 .cart-line-actions{display:flex; gap:10px; margin-top:6px;}
 .cart-line-actions button{
   background:none; border:none; font-family:var(--font-body); font-size:0.75rem;

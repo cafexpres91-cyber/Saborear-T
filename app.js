@@ -43,30 +43,26 @@ function renderMain() {
   if (meta.type === "pizza") {
     section.innerHTML = `
       <h2 class="section-heading">Pizzas</h2>
-      <p class="section-intro">Disfruta, combina y divide. Elige tradicional (hasta 2 ingredientes) o una de nuestras especialidades.</p>
+      <p class="section-intro">Elige el tamaño y, si quieres, divide tu pizza en secciones para combinar sabores tradicionales y especialidades.</p>
       <div class="card-grid">
         <div class="item-card">
           <h3>Tradicional</h3>
-          <p class="desc">Hasta 2 ingredientes a tu elección. Chica $${PIZZA_CONFIG.tradicional.prices.chica} · Mediana $${PIZZA_CONFIG.tradicional.prices.mediana} · Grande $${PIZZA_CONFIG.tradicional.prices.grande} · Mega $${PIZZA_CONFIG.tradicional.prices.mega}</p>
-          <button class="card-cta builder" data-open-pizza="tradicional">Armar mi pizza</button>
+          <p class="desc">Hasta 2 ingredientes por sección. Chica $${PIZZA_CONFIG.tradicional.prices.chica} · Mediana $${PIZZA_CONFIG.tradicional.prices.mediana} · Grande $${PIZZA_CONFIG.tradicional.prices.grande} · Mega $${PIZZA_CONFIG.tradicional.prices.mega}</p>
         </div>
         <div class="item-card">
           <h3>Especialidad</h3>
-          <p class="desc">Recetas de la casa: ${PIZZA_CONFIG.especialidad.recetas.map(r=>r.name).join(", ")}. Ingrediente extra +$${PIZZA_CONFIG.especialidad.ingredienteExtra}.</p>
-          <button class="card-cta builder" data-open-pizza="especialidad">Elegir especialidad</button>
+          <p class="desc">1 receta por sección. Recetas: ${PIZZA_CONFIG.especialidad.recetas.map(r=>r.name).join(", ")}. Chica $${PIZZA_CONFIG.especialidad.prices.chica} · Mediana $${PIZZA_CONFIG.especialidad.prices.mediana} · Grande $${PIZZA_CONFIG.especialidad.prices.grande} · Mega $${PIZZA_CONFIG.especialidad.prices.mega}</p>
         </div>
         <div class="item-card">
-          <h3>Mixta</h3>
-          <p class="desc">${PIZZA_CONFIG.mixta.intro} ${PIZZA_CONFIG.mixta.sizes.map(s=>`${s.label} $${s.price}`).join(" · ")}</p>
-          <button class="card-cta builder" data-open-pizza="mixta">Armar pizza mixta</button>
+          <h3>Combinada (mitad y mitad / tercios / cuartos)</h3>
+          <p class="desc">Divide tu Mediana o Grande en 2 secciones, o tu Mega en 2, 3 o 4. Mediana $${PIZZA_CONFIG.mixtaPrices.mediana} · Grande $${PIZZA_CONFIG.mixtaPrices.grande} · Mega $${PIZZA_CONFIG.mixtaPrices.mega} (el precio final depende de cuántas secciones sean de especialidad).</p>
         </div>
       </div>
+      <button class="card-cta builder" id="openPizzaBuilderBtn" style="margin-top:16px;">Armar mi pizza</button>
       <p class="section-intro" style="margin-top:16px;">${PIZZA_CONFIG.nota}</p>
     `;
     main.appendChild(section);
-    section.querySelectorAll("[data-open-pizza]").forEach((b) =>
-      b.addEventListener("click", () => openPizzaBuilder(b.dataset.openPizza))
-    );
+    section.querySelector("#openPizzaBuilderBtn").addEventListener("click", () => openPizzaBuilder());
     return;
   }
 
@@ -130,13 +126,14 @@ function openItemModal(catKey, itemId) {
     proteina: null,
     pan: null,
     qty: 1,
+    comment: "",
   };
   renderItemModal();
   toggleModal("itemModal", true);
 }
 
 function renderItemModal() {
-  const { catKey, itemId, variantIdx, proteina, pan, qty } = itemModalState;
+  const { catKey, itemId, variantIdx, proteina, pan, qty, comment } = itemModalState;
   const cat = MENU[catKey];
   const item = cat.items.find((i) => i.id === itemId);
   const variant = item.variants[variantIdx];
@@ -176,6 +173,11 @@ function renderItemModal() {
         </div>
       </div>` : ""}
 
+    <div class="builder-step">
+      <h4>¿Alguna solicitud especial? (opcional)</h4>
+      <textarea id="itemCommentInput" class="comment-input" rows="2" placeholder="Ej. sin cebolla, bien cocido...">${comment}</textarea>
+    </div>
+
     <div class="builder-footer">
       <div class="qty-row">
         <button class="qty-btn" id="itemQtyMinus">−</button>
@@ -203,6 +205,9 @@ function renderItemModal() {
       b.addEventListener("click", () => { itemModalState.pan = b.dataset.pan; renderItemModal(); })
     );
   }
+  inner.querySelector("#itemCommentInput").addEventListener("input", (e) => {
+    itemModalState.comment = e.target.value;
+  });
   inner.querySelector("#itemQtyMinus").addEventListener("click", () => {
     itemModalState.qty = Math.max(1, itemModalState.qty - 1); renderItemModal();
   });
@@ -221,145 +226,122 @@ function renderItemModal() {
       unitPrice: variant.price,
       qty: itemModalState.qty,
       details,
+      comment: itemModalState.comment,
     });
     toggleModal("itemModal", false);
   });
 }
 
 /* ---------------------------------------------------------
-   PIZZA BUILDER
+   PIZZA BUILDER (por secciones)
 --------------------------------------------------------- */
 let pzState = null;
 
-function openPizzaBuilder(type) {
-  const defaultSize = type === "mixta" ? PIZZA_CONFIG.mixta.sizes[0].key : "mediana";
-  pzState = { type, size: defaultSize, ingredients: [], recetas: [], extra: 0, qty: 1 };
+function pizzaDefaultSection() {
+  return { type: "tradicional", ingredients: [], recetaIdx: null };
+}
+
+function pizzaPartsOptions() {
+  return PIZZA_CONFIG.partsOptions[pzState.size];
+}
+
+function pizzaResizeSections(newParts) {
+  const sections = pzState.sections;
+  while (sections.length < newParts) sections.push(pizzaDefaultSection());
+  while (sections.length > newParts) sections.pop();
+  pzState.parts = newParts;
+}
+
+function openPizzaBuilder() {
+  pzState = { size: "mediana", parts: 1, sections: [pizzaDefaultSection()], qty: 1, comment: "" };
   renderPizzaBuilder();
   toggleModal("builderModal", true);
 }
 
-function pizzaMaxIngredientes() {
-  if (pzState.type === "mixta") return pizzaMixtaSize().maxTrad;
-  return PIZZA_CONFIG.tradicional.maxIngredientes[pzState.size];
-}
-function pizzaMaxRecetas() {
-  if (pzState.type === "mixta") return pizzaMixtaSize().maxEsp;
-  return PIZZA_CONFIG.especialidad.maxRecetas[pzState.size];
-}
-function pizzaMixtaSize() {
-  return PIZZA_CONFIG.mixta.sizes.find(s => s.key === pzState.size) || PIZZA_CONFIG.mixta.sizes[0];
-}
-function pizzaSizeOptions() {
-  const conf = PIZZA_CONFIG;
-  if (pzState.type === "mixta") {
-    return conf.mixta.sizes.map(s => ({ key: s.key, label: s.label, price: s.price }));
-  }
-  return conf.sizes.map(s => ({ key: s.key, label: s.label, price: conf[pzState.type].prices[s.key] }));
-}
-
 function pizzaUnitPrice() {
-  if (pzState.type === "mixta") return pizzaMixtaSize().price;
-  const base = PIZZA_CONFIG[pzState.type].prices[pzState.size];
-  const extraCost = pzState.type === "especialidad" ? pzState.extra * PIZZA_CONFIG.especialidad.ingredienteExtra : 0;
-  return base + extraCost;
+  const conf = PIZZA_CONFIG;
+  const { size, parts, sections } = pzState;
+
+  if (parts === 1) {
+    return sections[0].type === "tradicional" ? conf.tradicional.prices[size] : conf.especialidad.prices[size];
+  }
+
+  const espCount = sections.filter((s) => s.type === "especialidad").length;
+  const tradCount = parts - espCount;
+
+  if (size === "mega") {
+    if (espCount > parts / 2) return conf.especialidad.prices.mega;
+    return conf.mixtaPrices.mega;
+  }
+
+  // mediana / grande, siempre 2 secciones en este caso
+  if (espCount === parts) return conf.especialidad.prices[size];
+  if (tradCount === parts) return conf.tradicional.prices[size];
+  return conf.mixtaPrices[size];
 }
 
 function renderPizzaBuilder() {
   const inner = document.getElementById("builderModalInner");
   const conf = PIZZA_CONFIG;
-  const isTrad = pzState.type === "tradicional";
-  const isEsp = pzState.type === "especialidad";
-  const isMixta = pzState.type === "mixta";
-  const maxIng = pizzaMaxIngredientes();
-  const maxRec = pizzaMaxRecetas();
-  const sizeOptions = pizzaSizeOptions();
-
-  const stepLabel = isTrad ? " e ingredientes" : isEsp ? " y receta(s)" : ", ingrediente(s) y receta(s)";
+  const partsOptions = pizzaPartsOptions();
+  const showPartsStep = partsOptions.length > 1;
 
   inner.innerHTML = `
     <button class="modal-x" data-close-builder>✕</button>
     <h2 class="modal-h">Arma tu pizza</h2>
-    <p class="modal-p">Elige tipo, tamaño${stepLabel}.</p>
-
-    <div class="type-toggle">
-      <button data-type="tradicional" class="${isTrad?"active":""}">Tradicional</button>
-      <button data-type="especialidad" class="${isEsp?"active":""}">Especialidad</button>
-      <button data-type="mixta" class="${isMixta?"active":""}">Mixta</button>
-    </div>
-    ${isMixta ? `<p class="modal-p" style="margin-top:-10px;">${conf.mixta.intro}</p>` : ""}
+    <p class="modal-p">Elige tamaño${showPartsStep ? ", si la divides" : ""} y el sabor de cada sección.</p>
 
     <div class="builder-step">
       <h4>Tamaño</h4>
       <div class="size-grid">
-        ${sizeOptions.map(s => `
+        ${conf.sizes.map(s => `
           <button class="size-card ${pzState.size===s.key?"selected":""}" data-size="${s.key}">
-            <b>${s.label}</b><span>${money(s.price)}</span>
+            <b>${s.label}</b>
           </button>`).join("")}
       </div>
     </div>
 
-    ${isTrad ? `
+    ${showPartsStep ? `
       <div class="builder-step">
-        <h4>Ingredientes (máx. ${maxIng} en este tamaño)</h4>
+        <h4>¿Cómo la quieres dividir?</h4>
         <div class="chip-group">
-          ${conf.tradicional.ingredientes.map(ing => {
-            const selected = pzState.ingredients.includes(ing);
-            const disabled = !selected && pzState.ingredients.length >= maxIng;
-            return `<button class="chip ${selected?"selected":""} ${disabled?"disabled":""}" data-ing="${ing}">${ing}</button>`;
-          }).join("")}
+          ${partsOptions.map(n => `<button class="chip ${pzState.parts===n?"selected":""}" data-parts="${n}">${conf.partLabels[n]}</button>`).join("")}
         </div>
       </div>
     ` : ""}
 
-    ${isEsp ? `
-      <div class="builder-step">
-        <h4>Elige tu(s) receta(s) — máx. ${maxRec} en este tamaño</h4>
-        ${conf.especialidad.recetas.map((r, i) => {
-          const selected = pzState.recetas.includes(i);
-          const disabled = !selected && pzState.recetas.length >= maxRec;
-          return `
-            <button class="recipe-card ${selected?"selected":""} ${disabled?"disabled":""}" data-receta="${i}" style="width:100%; text-align:left; display:block;">
+    ${pzState.sections.map((sec, i) => `
+      <div class="builder-step" style="border-top:1px dashed var(--line); padding-top:16px;">
+        <h4>${pzState.parts > 1 ? `Sección ${i+1} de ${pzState.parts}` : "Tu pizza"}</h4>
+        <div class="chip-group" style="margin-bottom:10px;">
+          <button class="chip ${sec.type==="tradicional"?"selected":""}" data-sec-type="${i}:tradicional">Tradicional</button>
+          <button class="chip ${sec.type==="especialidad"?"selected":""}" data-sec-type="${i}:especialidad">Especialidad</button>
+        </div>
+        ${sec.type === "tradicional" ? `
+          <p class="chip-note">Hasta ${conf.maxIngredientesPorSeccion} ingredientes</p>
+          <div class="chip-group">
+            ${conf.tradicional.ingredientes.map(ing => {
+              const selected = sec.ingredients.includes(ing);
+              const disabled = !selected && sec.ingredients.length >= conf.maxIngredientesPorSeccion;
+              return `<button class="chip ${selected?"selected":""} ${disabled?"disabled":""}" data-sec-ing="${i}:${ing}">${ing}</button>`;
+            }).join("")}
+          </div>
+        ` : `
+          <p class="chip-note">Elige 1 receta para esta sección</p>
+          ${conf.especialidad.recetas.map((r, ri) => `
+            <button class="recipe-card ${sec.recetaIdx===ri?"selected":""}" data-sec-receta="${i}:${ri}" style="width:100%; text-align:left; display:block;">
               <b>${r.name}</b>
               <p>${r.desc}</p>
             </button>
-          `;
-        }).join("")}
+          `).join("")}
+        `}
       </div>
-      <div class="builder-step">
-        <h4>Ingredientes extra (+${money(conf.especialidad.ingredienteExtra)} c/u)</h4>
-        <div class="qty-row">
-          <button class="qty-btn" id="pzExtraMinus">−</button>
-          <span style="font-family:var(--font-mono); font-weight:700;">${pzState.extra}</span>
-          <button class="qty-btn" id="pzExtraPlus">+</button>
-        </div>
-      </div>
-    ` : ""}
+    `).join("")}
 
-    ${isMixta ? `
-      <div class="builder-step">
-        <h4>Ingrediente(s) tradicional(es) — máx. ${maxIng} en este tamaño</h4>
-        <div class="chip-group">
-          ${conf.tradicional.ingredientes.map(ing => {
-            const selected = pzState.ingredients.includes(ing);
-            const disabled = !selected && pzState.ingredients.length >= maxIng;
-            return `<button class="chip ${selected?"selected":""} ${disabled?"disabled":""}" data-ing="${ing}">${ing}</button>`;
-          }).join("")}
-        </div>
-      </div>
-      <div class="builder-step">
-        <h4>Receta(s) de especialidad — máx. ${maxRec} en este tamaño</h4>
-        ${conf.especialidad.recetas.map((r, i) => {
-          const selected = pzState.recetas.includes(i);
-          const disabled = !selected && pzState.recetas.length >= maxRec;
-          return `
-            <button class="recipe-card ${selected?"selected":""} ${disabled?"disabled":""}" data-receta="${i}" style="width:100%; text-align:left; display:block;">
-              <b>${r.name}</b>
-              <p>${r.desc}</p>
-            </button>
-          `;
-        }).join("")}
-      </div>
-    ` : ""}
+    <div class="builder-step">
+      <h4>¿Alguna solicitud especial? (opcional)</h4>
+      <textarea id="pzCommentInput" class="comment-input" rows="2" placeholder="Ej. bien horneada, cortar en cuadros, sin orégano...">${pzState.comment}</textarea>
+    </div>
 
     <div class="builder-footer">
       <div class="qty-row">
@@ -373,90 +355,90 @@ function renderPizzaBuilder() {
   `;
 
   inner.querySelector("[data-close-builder]").addEventListener("click", () => toggleModal("builderModal", false));
-  inner.querySelectorAll("[data-type]").forEach((b) =>
-    b.addEventListener("click", () => {
-      const newType = b.dataset.type;
-      pzState.type = newType;
-      pzState.ingredients = [];
-      pzState.recetas = [];
-      pzState.extra = 0;
-      pzState.size = newType === "mixta" ? PIZZA_CONFIG.mixta.sizes[0].key : "mediana";
-      renderPizzaBuilder();
-    })
-  );
+  inner.querySelector("#pzCommentInput").addEventListener("input", (e) => { pzState.comment = e.target.value; });
+
   inner.querySelectorAll("[data-size]").forEach((b) =>
     b.addEventListener("click", () => {
       pzState.size = b.dataset.size;
-      // si el nuevo tamaño permite menos selecciones, recorta lo que sobre
-      pzState.ingredients = pzState.ingredients.slice(0, pizzaMaxIngredientes());
-      pzState.recetas = pzState.recetas.slice(0, pizzaMaxRecetas());
+      const allowed = pizzaPartsOptions();
+      if (!allowed.includes(pzState.parts)) pizzaResizeSections(allowed[0]);
       renderPizzaBuilder();
     })
   );
-  if (isTrad || isMixta) {
-    inner.querySelectorAll("[data-ing]").forEach((b) =>
-      b.addEventListener("click", () => {
-        const ing = b.dataset.ing;
-        const idx = pzState.ingredients.indexOf(ing);
-        if (idx >= 0) pzState.ingredients.splice(idx, 1);
-        else if (pzState.ingredients.length < maxIng) pzState.ingredients.push(ing);
-        else showToast(`Máximo ${maxIng} ingrediente(s) en este tamaño`);
-        renderPizzaBuilder();
-      })
+
+  if (showPartsStep) {
+    inner.querySelectorAll("[data-parts]").forEach((b) =>
+      b.addEventListener("click", () => { pizzaResizeSections(+b.dataset.parts); renderPizzaBuilder(); })
     );
   }
-  if (isEsp || isMixta) {
-    inner.querySelectorAll("[data-receta]").forEach((b) =>
-      b.addEventListener("click", () => {
-        const i = +b.dataset.receta;
-        const idx = pzState.recetas.indexOf(i);
-        if (idx >= 0) pzState.recetas.splice(idx, 1);
-        else if (pzState.recetas.length < maxRec) pzState.recetas.push(i);
-        else showToast(`Máximo ${maxRec} receta(s) en este tamaño`);
-        renderPizzaBuilder();
-      })
-    );
-  }
-  if (isEsp) {
-    inner.querySelector("#pzExtraMinus").addEventListener("click", () => { pzState.extra = Math.max(0, pzState.extra-1); renderPizzaBuilder(); });
-    inner.querySelector("#pzExtraPlus").addEventListener("click", () => { pzState.extra += 1; renderPizzaBuilder(); });
-  }
+
+  inner.querySelectorAll("[data-sec-type]").forEach((b) =>
+    b.addEventListener("click", () => {
+      const [i, type] = b.dataset.secType.split(":");
+      const sec = pzState.sections[+i];
+      sec.type = type;
+      sec.ingredients = [];
+      sec.recetaIdx = null;
+      renderPizzaBuilder();
+    })
+  );
+
+  inner.querySelectorAll("[data-sec-ing]").forEach((b) =>
+    b.addEventListener("click", () => {
+      const [i, ing] = b.dataset.secIng.split(":");
+      const sec = pzState.sections[+i];
+      const idx = sec.ingredients.indexOf(ing);
+      if (idx >= 0) sec.ingredients.splice(idx, 1);
+      else if (sec.ingredients.length < conf.maxIngredientesPorSeccion) sec.ingredients.push(ing);
+      else showToast(`Máximo ${conf.maxIngredientesPorSeccion} ingredientes por sección`);
+      renderPizzaBuilder();
+    })
+  );
+
+  inner.querySelectorAll("[data-sec-receta]").forEach((b) =>
+    b.addEventListener("click", () => {
+      const [i, ri] = b.dataset.secReceta.split(":");
+      pzState.sections[+i].recetaIdx = +ri;
+      renderPizzaBuilder();
+    })
+  );
+
   inner.querySelector("#pzQtyMinus").addEventListener("click", () => { pzState.qty = Math.max(1, pzState.qty-1); renderPizzaBuilder(); });
   inner.querySelector("#pzQtyPlus").addEventListener("click", () => { pzState.qty += 1; renderPizzaBuilder(); });
+
   inner.querySelector("#pzAddBtn").addEventListener("click", () => {
-    if (isTrad && pzState.ingredients.length === 0) return showToast("Elige al menos 1 ingrediente");
-    if (isEsp && pzState.recetas.length === 0) return showToast("Elige al menos 1 receta");
-    if (isMixta && pzState.ingredients.length === 0) return showToast("Elige al menos 1 ingrediente tradicional");
-    if (isMixta && pzState.recetas.length === 0) return showToast("Elige al menos 1 receta de especialidad");
-
-    const sizeLabel = sizeOptions.find(s => s.key === pzState.size).label;
-    const recetaNames = pzState.recetas.map(i => conf.especialidad.recetas[i].name);
-    const details = [];
-    let nameSuffix;
-
-    if (isTrad) {
-      details.push(`Ingredientes: ${pzState.ingredients.join(", ")}`);
-      nameSuffix = "Tradicional";
-    } else if (isEsp) {
-      details.push(`Receta${recetaNames.length>1?"s":""}: ${recetaNames.join(", ")}`);
-      if (pzState.extra > 0) details.push(`Ingredientes extra: ${pzState.extra} (+${money(pzState.extra*conf.especialidad.ingredienteExtra)})`);
-      nameSuffix = recetaNames.join(" + ");
-    } else {
-      details.push(`Ingredientes: ${pzState.ingredients.join(", ")}`);
-      details.push(`Receta${recetaNames.length>1?"s":""}: ${recetaNames.join(", ")}`);
-      nameSuffix = `Mixta (${pzState.ingredients.join(", ")} + ${recetaNames.join(", ")})`;
+    for (let i = 0; i < pzState.sections.length; i++) {
+      const sec = pzState.sections[i];
+      if (sec.type === "tradicional" && sec.ingredients.length === 0) {
+        return showToast(pzState.parts > 1 ? `Elige al menos 1 ingrediente en la sección ${i+1}` : "Elige al menos 1 ingrediente");
+      }
+      if (sec.type === "especialidad" && sec.recetaIdx === null) {
+        return showToast(pzState.parts > 1 ? `Elige una receta en la sección ${i+1}` : "Elige una receta");
+      }
     }
 
+    const sizeLabel = conf.sizes.find(s => s.key === pzState.size).label;
+    const partsLabel = conf.partLabels[pzState.parts];
+    const details = pzState.sections.map((sec, i) => {
+      const prefix = pzState.parts > 1 ? `Sección ${i+1}` : "";
+      if (sec.type === "tradicional") {
+        return `${prefix ? prefix + " · " : ""}Tradicional: ${sec.ingredients.join(", ")}`;
+      }
+      return `${prefix ? prefix + " · " : ""}Especialidad: ${conf.especialidad.recetas[sec.recetaIdx].name}`;
+    });
+
     addToCart({
-      name: `Pizza ${nameSuffix} (${sizeLabel})`,
+      name: `${sizeLabel}${pzState.parts > 1 ? ` — ${partsLabel}` : ""}`,
       categoryLabel: "Pizzas",
       unitPrice: pizzaUnitPrice(),
       qty: pzState.qty,
       details,
+      comment: pzState.comment,
     });
     toggleModal("builderModal", false);
   });
 }
+
 
 /* ---------------------------------------------------------
    SALAD BUILDER
@@ -464,7 +446,7 @@ function renderPizzaBuilder() {
 let slState = null;
 
 function openSaladBuilder(sizeKey) {
-  slState = { size: sizeKey, base: SALAD_CONFIG.bases[0], proteinas: [], toppings: [], aderezo: null, semillas: [], crutonOQueso: null, pechugaExtra: false, aderezoExtra: false, qty: 1 };
+  slState = { size: sizeKey, base: SALAD_CONFIG.bases[0], proteinas: [], toppings: [], aderezo: null, semillas: [], crutonOQueso: null, pechugaExtra: false, aderezoExtra: false, qty: 1, comment: "" };
   renderSaladBuilder();
   toggleModal("builderModal", true);
 }
@@ -547,6 +529,11 @@ function renderSaladBuilder() {
       </div>
     </div>
 
+    <div class="builder-step">
+      <h4>¿Alguna solicitud especial? (opcional)</h4>
+      <textarea id="slCommentInput" class="comment-input" rows="2" placeholder="Ej. aderezo aparte, sin cebolla, poca sal...">${slState.comment}</textarea>
+    </div>
+
     <div class="builder-footer">
       <div class="qty-row">
         <button class="qty-btn" id="slQtyMinus">−</button>
@@ -559,6 +546,7 @@ function renderSaladBuilder() {
   `;
 
   inner.querySelector("[data-close-builder]").addEventListener("click", () => toggleModal("builderModal", false));
+  inner.querySelector("#slCommentInput").addEventListener("input", (e) => { slState.comment = e.target.value; });
   inner.querySelectorAll("[data-size]").forEach((b) => b.addEventListener("click", () => { slState.size = b.dataset.size; renderSaladBuilder(); }));
   inner.querySelectorAll("[data-base]").forEach((b) => b.addEventListener("click", () => { slState.base = b.dataset.base; renderSaladBuilder(); }));
   inner.querySelectorAll("[data-prot]").forEach((b) => b.addEventListener("click", () => { toggleArrItem(slState.proteinas, b.dataset.prot); renderSaladBuilder(); }));
@@ -597,6 +585,7 @@ function renderSaladBuilder() {
       unitPrice: saladUnitPrice(),
       qty: slState.qty,
       details,
+      comment: slState.comment,
     });
     toggleModal("builderModal", false);
   });
@@ -626,8 +615,8 @@ document.getElementById("modalOverlay").addEventListener("click", () => {
 /* ---------------------------------------------------------
    CARRITO
 --------------------------------------------------------- */
-function addToCart({ name, categoryLabel, unitPrice, qty, details }) {
-  cart.push({ uid: Date.now() + Math.random(), name, categoryLabel, unitPrice, qty, details });
+function addToCart({ name, categoryLabel, unitPrice, qty, details, comment }) {
+  cart.push({ uid: Date.now() + Math.random(), name, categoryLabel, unitPrice, qty, details, comment: (comment || "").trim() });
   renderCart();
   showToast(`${name} agregado a tu pedido`);
 }
@@ -661,6 +650,7 @@ function renderCart() {
           <span>${money(c.unitPrice * c.qty)}</span>
         </div>
         ${c.details && c.details.length ? `<div class="cart-line-detail">${c.details.join(" · ")}</div>` : ""}
+        ${c.comment ? `<div class="cart-line-comment">💬 ${c.comment}</div>` : ""}
         <div class="cart-line-actions">
           <button data-remove="${c.uid}">Quitar</button>
         </div>
@@ -710,6 +700,7 @@ document.getElementById("sendWhatsappBtn").addEventListener("click", () => {
   cart.forEach((c) => {
     msg += `\n▫️ ${c.qty}x ${c.name} — ${money(c.unitPrice * c.qty)}`;
     if (c.details && c.details.length) msg += `\n   ${c.details.join("\n   ")}`;
+    if (c.comment) msg += `\n   💬 ${c.comment}`;
   });
   msg += `\n\n💰 *Total: ${money(cartTotal())}*`;
   if (notes) msg += `\n\n📝 Notas: ${notes}`;

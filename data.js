@@ -28,12 +28,12 @@ const MENU = {
     emoji: "🍝",
     intro: "Acompañadas con queso parmesano. Elige preparación con o sin crema, y tu proteína.",
     items: [
-      { id: "pas-poblana", name: "Pastas Poblana", desc: "Base crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
-      { id: "pas-chipotle", name: "Pastas Chipotle", desc: "Base crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
-      { id: "pas-crema", name: "Pastas a la crema", desc: "Base crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
-      { id: "pas-casa", name: "Pastas salsa de la casa", desc: "Sin crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
-      { id: "pas-mantequilla", name: "Pastas a la mantequilla", desc: "Sin crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
-      { id: "pas-teriyaki", name: "Pastas Teriyaki", desc: "Con vegetales salteados.", variants: [{ label: "Único", price: 160 }] },
+      { id: "pas-poblana", name: "Pasta Poblana", desc: "Base crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
+      { id: "pas-chipotle", name: "Pasta Chipotle", desc: "Base crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
+      { id: "pas-crema", name: "Pasta a la crema", desc: "Base crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
+      { id: "pas-casa", name: "Pasta salsa de la casa", desc: "Sin crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
+      { id: "pas-mantequilla", name: "Pasta a la mantequilla", desc: "Sin crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
+      { id: "pas-teriyaki", name: "Pasta Teriyaki", desc: "Con vegetales salteados.", variants: [{ label: "Único", price: 160 }] },
     ],
     proteinaOpciones: ["Salchicha Asadera", "Jamón", "Pollo", "Salchicha Pavo"],
   },
@@ -74,9 +74,7 @@ const MENU = {
       { id: "com-chilaquiles", name: "Chilaquiles verdes", desc: "Con pollo desmenuzado, crema, queso y cebolla. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 135 }] },
       { id: "com-alambre", name: "Alambre de pollo", desc: "Con morrón, cebolla, queso, pepino, jitomate y tortillas de harina. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 155 }] },
       { id: "com-ensalada-chica", name: "Ensalada chica (paquete)", desc: "Ármala a tu gusto como una ensalada chica. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 155 }] },
-      { id: "com-porcion-extra", name: "Consomé porción personal", desc: "Consomé.", variants: [{ label: "Porción consome", price: 50 }] },
-      { id: "com-porcion-extra", name: "Crema porción personal", desc: "Crema.", variants: [{ label: "Porción Crema", price: 50 }] },
-      { id: "com-porcion-extra", name: "Pasta porción personal", desc: "Pasta.", variants: [{ label: "Porción Pasta", price: 50 }] },
+      { id: "com-porcion-extra", name: "Extra porción personal", desc: "Consomé, crema o pasta.", variants: [{ label: "Porción", price: 50 }] },
       { id: "com-pechuga-sola", name: "Pechuga empanizada (sin paquete)", desc: "Con ensalada o espagueti.", variants: [{ label: "Individual", price: 90 }] },
       { id: "com-suizas", name: "Enchiladas Suizas (sin paquete)", desc: "Rellenas de pollo, bañadas en salsa verde y gratinadas.", variants: [{ label: "Individual", price: 115 }] },
     ],
@@ -122,15 +120,17 @@ const PIZZA_CONFIG = {
     { key: "grande", label: "Pizza Grande 40cm" },
     { key: "mega", label: "Pizza Mega 45cm" },
   ],
+  /* Cuántas secciones se pueden elegir según el tamaño, y cómo se llama cada opción */
+  partsOptions: { chica: [1], mediana: [1, 2], grande: [1, 2], mega: [1, 2, 3, 4] },
+  partLabels: { 1: "Pizza completa", 2: "Mitad y Mitad", 3: "En tercios", 4: "En cuartos" },
+  /* Cada sección admite hasta 2 ingredientes tradicionales, o 1 receta de especialidad */
+  maxIngredientesPorSeccion: 2,
   tradicional: {
-    maxIngredientes: { chica: 2, mediana: 2, grande: 2, mega: 4 },
     prices: { chica: 90, mediana: 200, grande: 240, mega: 320 },
     ingredientes: ["Hawaiana", "Pepperoni", "Pollo", "Atún", "Jamón", "Tocino", "Champiñones", "Salchicha de Pavo o Asadera", "Molida de Res", "Elote", "Pimiento", "Piña", "Aguacate", "PopCorn Chicken"],
   },
   especialidad: {
     prices: { chica: 110, mediana: 240, grande: 280, mega: 380 },
-    ingredienteExtra: 60,
-    maxRecetas: { chica: 2, mediana: 2, grande: 2, mega: 4 },
     recetas: [
       { name: "Cochinita", desc: "Base de frijoles con nuestra exquisita cochinita." },
       { name: "Mexicana", desc: "Base de frijoles acompañada de longaniza, salchicha y aguacate." },
@@ -143,15 +143,9 @@ const PIZZA_CONFIG = {
       { name: "Hawaiana", desc: "Base de salsa de la casa con queso, piña y jamón." },
     ],
   },
-  mixta: {
-    intro: "Combina lo mejor de ambos mundos: ingredientes tradicionales y una especialidad de la casa en la misma pizza.",
-    sizes: [
-      { key: "mediana", label: "Mediana", price: 220, maxTrad: 1, maxEsp: 1 },
-      { key: "grande", label: "Grande", price: 260, maxTrad: 1, maxEsp: 1 },
-      { key: "megaCuadrada", label: "Mega Cuadrada", price: 350, maxTrad: 2, maxEsp: 2 },
-    ],
-  },
-  nota: "Tradicional: hasta 2 ingredientes (Chica, Mediana, Grande) y hasta 4 en Mega. Especialidad: hasta 2 recetas combinadas (Chica, Mediana, Grande) y hasta 4 en Mega. Mixta: combina ingredientes tradicionales y especialidades en una sola pizza.",
+  /* Precio cuando una pizza dividida combina secciones de distinto tipo */
+  mixtaPrices: { mediana: 220, grande: 260, mega: 350 },
+  nota: "Chica: sin división, hasta 2 ingredientes en tradicional o 1 sabor en especialidad. Mediana y Grande: se pueden dividir en 2 secciones. Mega: se puede dividir en 2, 3 o 4 secciones. Cada sección admite hasta 2 ingredientes (tradicional) o 1 receta (especialidad). En Mega, si la mayoría de las secciones son de especialidad se cobra precio de especialidad; de lo contrario se cobra el precio de pizza mixta.",
 };
 
 /* ---------- Armador de Ensalada ---------- */
