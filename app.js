@@ -144,7 +144,8 @@ function renderItemModal() {
   const variant = item.variants[variantIdx];
 
   const needsProteina = cat.proteinaOpciones && /con prote/i.test(variant.label);
-  const needsPan = !!cat.extraChoice;
+  const choiceConf = item.extraChoice || cat.extraChoice;
+  const needsPan = !!choiceConf;
   const needsEntrada = !!item.needsEntrada;
   const needsTortilla = !!item.needsTortilla;
 
@@ -174,9 +175,9 @@ function renderItemModal() {
 
     ${needsPan ? `
       <div class="builder-step">
-        <h4>${cat.extraChoice.label}</h4>
+        <h4>${choiceConf.label}</h4>
         <div class="chip-group" id="panChips">
-          ${cat.extraChoice.options.map(p => `<button class="chip ${pan===p?"selected":""}" data-pan="${p}">${p}</button>`).join("")}
+          ${choiceConf.options.map(p => `<button class="chip ${pan===p?"selected":""}" data-pan="${p}">${p}</button>`).join("")}
         </div>
       </div>` : ""}
 
@@ -249,12 +250,12 @@ function renderItemModal() {
   });
   inner.querySelector("#itemAddBtn").addEventListener("click", () => {
     if (needsProteina && !proteina) return showToast("Elige una proteína");
-    if (needsPan && !pan) return showToast(`Elige: ${cat.extraChoice.label.toLowerCase()}`);
+    if (needsPan && !pan) return showToast(`Elige: ${choiceConf.label.toLowerCase()}`);
     if (needsEntrada && !entrada) return showToast("Elige tu entrada");
     if (needsTortilla && !tortilla) return showToast("Elige tus tortillas");
     const details = [];
     if (proteina) details.push(`Proteína: ${proteina}`);
-    if (pan) details.push(`${cat.extraChoice.detailLabel || cat.extraChoice.label}: ${pan}`);
+    if (pan) details.push(`${choiceConf.detailLabel || choiceConf.label}: ${pan}`);
     if (entrada) details.push(`Entrada: ${entrada}`);
     if (tortilla) details.push(`Tortillas: ${tortilla}`);
     addToCart({

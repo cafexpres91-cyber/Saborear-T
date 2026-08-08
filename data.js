@@ -13,7 +13,7 @@ const MENU = {
   calzones: {
     label: "Calzones",
     emoji: "🥟",
-    intro: "Es una de nuestras especialidades, elaborado con nuestra exquisita masa de pizza completamente cerrado y relleno de alguna de nuestras especialidades, acompañada de papas o espagueti (blanco o rojo).",
+    intro: "Masa de pizza cerrada y horneada, rellena de nuestras especialidades. Porción personal, acompañada de papas o espagueti (blanco o rojo).",
     items: [
       { id: "cal-hawaiano", name: "Calzone Hawaiano", desc: "Salsa de la casa, jamón y piña.", variants: [{ label: "Personal", price: 155 }] },
       { id: "cal-elote", name: "Calzone Elote", desc: "Salsa de la casa, pollo a la plancha en cubos y elote.", variants: [{ label: "Personal", price: 155 }] },
@@ -102,7 +102,7 @@ const MENU = {
     emoji: "🥪",
     items: [
       { id: "clu-sincronizadas", name: "Sincronizadas", desc: "Acompañadas con pico de gallo.", variants: [{ label: "Orden 2 pzas.", price: 45 }] },
-      { id: "clu-molletes", name: "Molletes", desc: "Jamón o salchicha, acompañados con pico de gallo.", variants: [{ label: "Orden 2 pzas.", price: 45 }] },
+      { id: "clu-molletes", name: "Molletes", desc: "Jamón o salchicha, acompañados con pico de gallo.", variants: [{ label: "Orden 2 pzas.", price: 45 }], extraChoice: { label: "Elige: jamón o salchicha", detailLabel: "Relleno", options: ["Jamón", "Salchicha"] } },
       { id: "clu-sandwich", name: "Sándwich", desc: "Jamón, queso, lechuga, jitomate, chiles en vinagre. Pan integral o blanco.", variants: [{ label: "Individual", price: 60 }] },
     ],
   },
@@ -130,7 +130,7 @@ const PIZZA_CONFIG = {
   maxIngredientesPorSeccion: 2,
   tradicional: {
     prices: { chica: 90, mediana: 200, grande: 240, mega: 320 },
-    ingredientes: ["Jamón", "Piña", "Pepperoni", "Pollo", "Atún", "Tocino", "Champiñones", "Salchicha de Pavo o Asadera", "Molida de Res", "Elote", "Pimiento", "Piña", "Aguacate", "PopCorn Chicken"],
+    ingredientes: ["Hawaiana", "Pepperoni", "Pollo", "Atún", "Jamón", "Tocino", "Champiñones", "Salchicha de Pavo o Asadera", "Molida de Res", "Elote", "Pimiento", "Piña", "Aguacate", "PopCorn Chicken"],
   },
   especialidad: {
     prices: { chica: 110, mediana: 240, grande: 280, mega: 380 },
