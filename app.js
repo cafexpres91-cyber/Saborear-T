@@ -378,7 +378,7 @@ function renderPizzaBuilder() {
 
     <div class="builder-step">
       <h4>¿Alguna solicitud especial? (opcional)</h4>
-      <textarea id="pzCommentInput" class="comment-input" rows="2" placeholder="Ej. bien horneada, cortar en cuadros, sin orégano...">${pzState.comment}</textarea>
+      <textarea id="pzCommentInput" class="comment-input" rows="2" placeholder="Ej. Bien dorada, sin sobres...">${pzState.comment}</textarea>
     </div>
 
     <div class="builder-footer">
