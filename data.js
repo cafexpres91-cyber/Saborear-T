@@ -13,14 +13,15 @@ const MENU = {
   calzones: {
     label: "Calzones",
     emoji: "🥟",
-    intro: "Masa de pizza cerrada y horneada, rellena de nuestras especialidades. Porción personal, acompañada de papas o espagueti (blanco o rojo).",
+    intro: "Es una de nuestras especialidades, elaborado con nuestra exquisita masa de pizza completamente cerrado y relleno de alguna de nuestras especialidades, acompañada de papas o espagueti (blanco o rojo).",
     items: [
-      { id: "cal-hawaiano", name: "Calzones Hawaiano", desc: "Salsa de la casa, jamón y piña.", variants: [{ label: "Personal", price: 155 }] },
-      { id: "cal-elote", name: "Calzones Elote", desc: "Salsa de la casa, pollo a la plancha en cubos y elote.", variants: [{ label: "Personal", price: 155 }] },
-      { id: "cal-champi", name: "Calzones Champiñones", desc: "Salsa de la casa, pollo a la plancha en cubos y champiñones.", variants: [{ label: "Personal", price: 155 }] },
-      { id: "cal-poblano", name: "Calzones Poblano", desc: "Crema poblana con pollo a la plancha en cubos.", variants: [{ label: "Personal", price: 155 }] },
-      { id: "cal-chipotle", name: "Calzones Chipotle", desc: "Crema de chipotle con pollo a la plancha en cubos.", variants: [{ label: "Personal", price: 155 }] },
+      { id: "cal-hawaiano", name: "Calzone Hawaiano", desc: "Salsa de la casa, jamón y piña.", variants: [{ label: "Personal", price: 155 }] },
+      { id: "cal-elote", name: "Calzone Elote", desc: "Salsa de la casa, pollo a la plancha en cubos y elote.", variants: [{ label: "Personal", price: 155 }] },
+      { id: "cal-champi", name: "Calzone Champiñones", desc: "Salsa de la casa, pollo a la plancha en cubos y champiñones.", variants: [{ label: "Personal", price: 155 }] },
+      { id: "cal-poblano", name: "Calzone Poblano", desc: "Crema poblana con pollo a la plancha en cubos.", variants: [{ label: "Personal", price: 155 }] },
+      { id: "cal-chipotle", name: "Calzone Chipotle", desc: "Crema de chipotle con pollo a la plancha en cubos.", variants: [{ label: "Personal", price: 155 }] },
     ],
+    extraChoice: { label: "Elige tu acompañamiento", detailLabel: "Acompañamiento", options: ["Porción personal de pasta blanca", "Porción personal de pasta roja", "Papas a la francesa"] },
   },
 
   pastas: {
@@ -28,12 +29,12 @@ const MENU = {
     emoji: "🍝",
     intro: "Acompañadas con queso parmesano. Elige preparación con o sin crema, y tu proteína.",
     items: [
-      { id: "pas-poblana", name: "Pasta Poblana", desc: "Base crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
-      { id: "pas-chipotle", name: "Pasta Chipotle", desc: "Base crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
-      { id: "pas-crema", name: "Pasta a la crema", desc: "Base crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
-      { id: "pas-casa", name: "Pasta salsa de la casa", desc: "Sin crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
-      { id: "pas-mantequilla", name: "Pasta a la mantequilla", desc: "Sin crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
-      { id: "pas-teriyaki", name: "Pasta Teriyaki", desc: "Con vegetales salteados.", variants: [{ label: "Único", price: 160 }] },
+      { id: "pas-poblana", name: "Pastas Poblana", desc: "Base crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
+      { id: "pas-chipotle", name: "Pastas Chipotle", desc: "Base crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
+      { id: "pas-crema", name: "Pastas a la crema", desc: "Base crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
+      { id: "pas-casa", name: "Pastas salsa de la casa", desc: "Sin crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
+      { id: "pas-mantequilla", name: "Pastas a la mantequilla", desc: "Sin crema.", variants: [{ label: "Con proteína", price: 125 }, { label: "Sin proteína", price: 95 }, { label: "Porción personal", price: 50 }, { label: "Boneless", price: 160 }] },
+      { id: "pas-teriyaki", name: "Pastas Teriyaki", desc: "Con vegetales salteados.", variants: [{ label: "Único", price: 160 }] },
     ],
     proteinaOpciones: ["Salchicha Asadera", "Jamón", "Pollo", "Salchicha Pavo"],
   },
@@ -47,7 +48,7 @@ const MENU = {
       { id: "ham-hawaiana", name: "Hamburguesa Hawaiana", desc: "Carne de res, lechuga, jitomate, queso, piña, jamón y tocino.", variants: [{ label: "Sencilla", price: 135 }, { label: "Doble", price: 175 }] },
       { id: "ham-pollo", name: "Hamburguesa Pollo", desc: "Carne molida de pollo, lechuga, jitomate, queso y tocino.", variants: [{ label: "Sencilla", price: 120 }] },
     ],
-    extraChoice: { label: "Elige tu pan", options: ["Ajonjolí", "Tradicional"] },
+    extraChoice: { label: "Elige tu pan", detailLabel: "Pan", options: ["Ajonjolí", "Tradicional"] },
   },
 
   alitas: {
@@ -68,12 +69,14 @@ const MENU = {
     label: "Comidas",
     emoji: "🍽️",
     intro: "Los paquetes incluyen una entrada (pasta, crema o consomé) y una agua chica del sabor del día.",
+    entradaOpciones: ["Crema de verdura", "Caldo de verdura", "Pasta roja", "Pasta blanca"],
+    tortillaOpciones: ["Maíz", "Harina"],
     items: [
-      { id: "com-pechuga-paq", name: "Pechuga asada o empanizada", desc: "Con ensalada y papas fritas. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 135 }] },
-      { id: "com-enchiladas-verdes", name: "Orden de 4 enchiladas verdes", desc: "Rellenas de pollo, con crema, queso y cebolla. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 135 }] },
-      { id: "com-chilaquiles", name: "Chilaquiles verdes", desc: "Con pollo desmenuzado, crema, queso y cebolla. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 135 }] },
-      { id: "com-alambre", name: "Alambre de pollo", desc: "Con morrón, cebolla, queso, pepino, jitomate y tortillas de harina. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 155 }] },
-      { id: "com-ensalada-chica", name: "Ensalada chica (paquete)", desc: "Ármala a tu gusto como una ensalada chica. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 155 }] },
+      { id: "com-pechuga-paq", name: "Pechuga asada o empanizada", desc: "Con ensalada y papas fritas. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 135 }], needsEntrada: true },
+      { id: "com-enchiladas-verdes", name: "Orden de 4 enchiladas verdes", desc: "Rellenas de pollo, con crema, queso y cebolla. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 135 }], needsEntrada: true },
+      { id: "com-chilaquiles", name: "Chilaquiles verdes", desc: "Con pollo desmenuzado, crema, queso y cebolla. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 135 }], needsEntrada: true },
+      { id: "com-alambre", name: "Alambre de pollo", desc: "Con morrón, cebolla, queso, pepino, jitomate y tortillas. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 155 }], needsEntrada: true, needsTortilla: true },
+      { id: "com-ensalada-chica", name: "Ensalada chica (paquete)", desc: "Ármala a tu gusto como una ensalada chica. Incluye entrada + agua.", variants: [{ label: "Paquete", price: 155 }], isSaladBuilder: true, needsEntrada: true },
       { id: "com-porcion-extra", name: "Extra porción personal", desc: "Consomé, crema o pasta.", variants: [{ label: "Porción", price: 50 }] },
       { id: "com-pechuga-sola", name: "Pechuga empanizada (sin paquete)", desc: "Con ensalada o espagueti.", variants: [{ label: "Individual", price: 90 }] },
       { id: "com-suizas", name: "Enchiladas Suizas (sin paquete)", desc: "Rellenas de pollo, bañadas en salsa verde y gratinadas.", variants: [{ label: "Individual", price: 115 }] },
@@ -122,12 +125,12 @@ const PIZZA_CONFIG = {
   ],
   /* Cuántas secciones se pueden elegir según el tamaño, y cómo se llama cada opción */
   partsOptions: { chica: [1], mediana: [1, 2], grande: [1, 2], mega: [1, 2, 3, 4] },
-  partLabels: { 1: "Pizza completa", 2: "Mitad y Mitad", 3: "En tercios", 4: "En cuartos" },
+  partLabels: { 1: "Sin dividir (pizza completa)", 2: "Mitad y mitad", 3: "En tercios", 4: "En cuartos" },
   /* Cada sección admite hasta 2 ingredientes tradicionales, o 1 receta de especialidad */
   maxIngredientesPorSeccion: 2,
   tradicional: {
     prices: { chica: 90, mediana: 200, grande: 240, mega: 320 },
-    ingredientes: ["Hawaiana", "Pepperoni", "Pollo", "Atún", "Jamón", "Tocino", "Champiñones", "Salchicha de Pavo o Asadera", "Molida de Res", "Elote", "Pimiento", "Piña", "Aguacate", "PopCorn Chicken"],
+    ingredientes: ["Jamón", "Piña", "Pepperoni", "Pollo", "Atún", "Tocino", "Champiñones", "Salchicha de Pavo o Asadera", "Molida de Res", "Elote", "Pimiento", "Piña", "Aguacate", "PopCorn Chicken"],
   },
   especialidad: {
     prices: { chica: 110, mediana: 240, grande: 280, mega: 380 },

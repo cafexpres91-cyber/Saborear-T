@@ -44,6 +44,7 @@ function renderMain() {
     section.innerHTML = `
       <h2 class="section-heading">Pizzas</h2>
       <p class="section-intro">Elige el tamaño y, si quieres, divide tu pizza en secciones para combinar sabores tradicionales y especialidades.</p>
+      <button class="card-cta builder" id="openPizzaBuilderBtn" style="margin-bottom:20px;">Armar mi pizza</button>
       <div class="card-grid">
         <div class="item-card">
           <h3>Tradicional</h3>
@@ -58,7 +59,6 @@ function renderMain() {
           <p class="desc">Divide tu Mediana o Grande en 2 secciones, o tu Mega en 2, 3 o 4. Mediana $${PIZZA_CONFIG.mixtaPrices.mediana} · Grande $${PIZZA_CONFIG.mixtaPrices.grande} · Mega $${PIZZA_CONFIG.mixtaPrices.mega} (el precio final depende de cuántas secciones sean de especialidad).</p>
         </div>
       </div>
-      <button class="card-cta builder" id="openPizzaBuilderBtn" style="margin-top:16px;">Armar mi pizza</button>
       <p class="section-intro" style="margin-top:16px;">${PIZZA_CONFIG.nota}</p>
     `;
     main.appendChild(section);
@@ -101,14 +101,17 @@ function renderMain() {
           <div class="item-variants">
             ${item.variants.map(v => `<div class="dot-row"><span>${v.label}</span><span class="dot-fill"></span><span class="price">${money(v.price)}</span></div>`).join("")}
           </div>
-          <button class="card-cta" data-item="${item.id}">Agregar</button>
+          <button class="card-cta ${item.isSaladBuilder ? "builder" : ""}" data-item="${item.id}" ${item.isSaladBuilder ? 'data-salad-builder="1"' : ""}>${item.isSaladBuilder ? "Armar mi ensalada" : "Agregar"}</button>
         </div>
       `).join("")}
     </div>
   `;
   main.appendChild(section);
   section.querySelectorAll("[data-item]").forEach((b) =>
-    b.addEventListener("click", () => openItemModal(currentCategory, b.dataset.item))
+    b.addEventListener("click", () => {
+      if (b.dataset.saladBuilder) openComidaEnsaladaBuilder(currentCategory, b.dataset.item);
+      else openItemModal(currentCategory, b.dataset.item);
+    })
   );
 }
 
@@ -125,6 +128,8 @@ function openItemModal(catKey, itemId) {
     variantIdx: 0,
     proteina: null,
     pan: null,
+    entrada: null,
+    tortilla: null,
     qty: 1,
     comment: "",
   };
@@ -133,13 +138,15 @@ function openItemModal(catKey, itemId) {
 }
 
 function renderItemModal() {
-  const { catKey, itemId, variantIdx, proteina, pan, qty, comment } = itemModalState;
+  const { catKey, itemId, variantIdx, proteina, pan, entrada, tortilla, qty, comment } = itemModalState;
   const cat = MENU[catKey];
   const item = cat.items.find((i) => i.id === itemId);
   const variant = item.variants[variantIdx];
 
   const needsProteina = cat.proteinaOpciones && /con prote/i.test(variant.label);
   const needsPan = !!cat.extraChoice;
+  const needsEntrada = !!item.needsEntrada;
+  const needsTortilla = !!item.needsTortilla;
 
   let unitPrice = variant.price;
 
@@ -170,6 +177,22 @@ function renderItemModal() {
         <h4>${cat.extraChoice.label}</h4>
         <div class="chip-group" id="panChips">
           ${cat.extraChoice.options.map(p => `<button class="chip ${pan===p?"selected":""}" data-pan="${p}">${p}</button>`).join("")}
+        </div>
+      </div>` : ""}
+
+    ${needsEntrada ? `
+      <div class="builder-step">
+        <h4>Elige tu entrada</h4>
+        <div class="chip-group" id="entradaChips">
+          ${cat.entradaOpciones.map(e => `<button class="chip ${entrada===e?"selected":""}" data-entrada="${e}">${e}</button>`).join("")}
+        </div>
+      </div>` : ""}
+
+    ${needsTortilla ? `
+      <div class="builder-step">
+        <h4>Elige tus tortillas</h4>
+        <div class="chip-group" id="tortillaChips">
+          ${cat.tortillaOpciones.map(t => `<button class="chip ${tortilla===t?"selected":""}" data-tortilla="${t}">${t}</button>`).join("")}
         </div>
       </div>` : ""}
 
@@ -205,6 +228,16 @@ function renderItemModal() {
       b.addEventListener("click", () => { itemModalState.pan = b.dataset.pan; renderItemModal(); })
     );
   }
+  if (needsEntrada) {
+    inner.querySelectorAll("[data-entrada]").forEach((b) =>
+      b.addEventListener("click", () => { itemModalState.entrada = b.dataset.entrada; renderItemModal(); })
+    );
+  }
+  if (needsTortilla) {
+    inner.querySelectorAll("[data-tortilla]").forEach((b) =>
+      b.addEventListener("click", () => { itemModalState.tortilla = b.dataset.tortilla; renderItemModal(); })
+    );
+  }
   inner.querySelector("#itemCommentInput").addEventListener("input", (e) => {
     itemModalState.comment = e.target.value;
   });
@@ -217,9 +250,13 @@ function renderItemModal() {
   inner.querySelector("#itemAddBtn").addEventListener("click", () => {
     if (needsProteina && !proteina) return showToast("Elige una proteína");
     if (needsPan && !pan) return showToast(`Elige: ${cat.extraChoice.label.toLowerCase()}`);
+    if (needsEntrada && !entrada) return showToast("Elige tu entrada");
+    if (needsTortilla && !tortilla) return showToast("Elige tus tortillas");
     const details = [];
     if (proteina) details.push(`Proteína: ${proteina}`);
-    if (pan) details.push(`Pan: ${pan}`);
+    if (pan) details.push(`${cat.extraChoice.detailLabel || cat.extraChoice.label}: ${pan}`);
+    if (entrada) details.push(`Entrada: ${entrada}`);
+    if (tortilla) details.push(`Tortillas: ${tortilla}`);
     addToCart({
       name: `${item.name} (${variant.label})`,
       categoryLabel: cat.label,
@@ -595,6 +632,167 @@ function toggleArrItem(arr, val) {
   const idx = arr.indexOf(val);
   if (idx >= 0) arr.splice(idx, 1);
   else arr.push(val);
+}
+
+/* ---------------------------------------------------------
+   ENSALADA CHICA (paquete de Comidas)
+   Misma funcionalidad del armador de ensaladas, pero fija
+   al tamaño chica, con precio de paquete y paso de entrada.
+--------------------------------------------------------- */
+let ceState = null;
+
+function openComidaEnsaladaBuilder(catKey, itemId) {
+  const cat = MENU[catKey];
+  const item = cat.items.find((i) => i.id === itemId);
+  ceState = {
+    catKey, itemId,
+    base: SALAD_CONFIG.bases[0], proteinas: [], toppings: [], aderezo: null,
+    semillas: [], crutonOQueso: null, pechugaExtra: false, aderezoExtra: false,
+    entrada: null, qty: 1, comment: "",
+  };
+  renderComidaEnsaladaBuilder();
+  toggleModal("builderModal", true);
+}
+
+function comidaEnsaladaUnitPrice(item) {
+  const sc = SALAD_CONFIG.sizes.find(s => s.key === "chica");
+  const extraProt = Math.max(0, ceState.proteinas.length - sc.proteinas) * SALAD_CONFIG.extras.proteina;
+  const extraTop = Math.max(0, ceState.toppings.length - sc.toppings) * SALAD_CONFIG.extras.toppings;
+  const pechuga = ceState.pechugaExtra ? SALAD_CONFIG.extras.pechuga : 0;
+  const aderezoExtra = ceState.aderezoExtra ? SALAD_CONFIG.extras.aderezoOCrutones : 0;
+  return item.variants[0].price + extraProt + extraTop + pechuga + aderezoExtra;
+}
+
+function renderComidaEnsaladaBuilder() {
+  const inner = document.getElementById("builderModalInner");
+  const cat = MENU[ceState.catKey];
+  const item = cat.items.find((i) => i.id === ceState.itemId);
+  const sc = SALAD_CONFIG.sizes.find(s => s.key === "chica");
+
+  const chipGroup = (arr, selectedArr, dataAttr) => arr.map(v => {
+    const selected = selectedArr.includes(v);
+    return `<button class="chip ${selected?"selected":""}" data-${dataAttr}="${v}">${v}</button>`;
+  }).join("");
+
+  inner.innerHTML = `
+    <button class="modal-x" data-close-builder>✕</button>
+    <h2 class="modal-h">${item.name}</h2>
+    <p class="modal-p">${SALAD_CONFIG.incluyeNota} Incluye entrada + agua chica.</p>
+
+    <div class="builder-step">
+      <h4>Elige tu entrada</h4>
+      <div class="chip-group">
+        ${cat.entradaOpciones.map(e => `<button class="chip ${ceState.entrada===e?"selected":""}" data-entrada="${e}">${e}</button>`).join("")}
+      </div>
+    </div>
+
+    <div class="builder-step">
+      <h4>Paso 1 · Base</h4>
+      <div class="chip-group">
+        ${SALAD_CONFIG.bases.map(b => `<button class="chip ${ceState.base===b?"selected":""}" data-base="${b}">${b}</button>`).join("")}
+      </div>
+    </div>
+
+    <div class="builder-step">
+      <h4>Paso 2 · Proteína (${sc.proteinas} incluida, extra +${money(SALAD_CONFIG.extras.proteina)})</h4>
+      <div class="chip-group">${chipGroup(SALAD_CONFIG.proteinas, ceState.proteinas, "prot")}</div>
+    </div>
+
+    <div class="builder-step">
+      <h4>Paso 3 · Toppings (${sc.toppings} incluidos, extra +${money(SALAD_CONFIG.extras.toppings)})</h4>
+      <div class="chip-group">${chipGroup(SALAD_CONFIG.toppings, ceState.toppings, "top")}</div>
+    </div>
+
+    <div class="builder-step">
+      <h4>Paso 4 · Aderezo o vinagreta</h4>
+      <div class="chip-group">
+        ${SALAD_CONFIG.aderezos.map(a => `<button class="chip ${ceState.aderezo===a?"selected":""}" data-ader="${a}">${a}</button>`).join("")}
+      </div>
+    </div>
+
+    <div class="builder-step">
+      <h4>Paso 5 · Semillas (elige hasta 2)</h4>
+      <div class="chip-group">${chipGroup(SALAD_CONFIG.semillas, ceState.semillas, "sem")}</div>
+    </div>
+
+    <div class="builder-step">
+      <h4>Crutones o queso parmesano</h4>
+      <div class="chip-group">
+        <button class="chip ${ceState.crutonOQueso==="Crutones"?"selected":""}" data-cq="Crutones">Crutones</button>
+        <button class="chip ${ceState.crutonOQueso==="Queso Parmesano"?"selected":""}" data-cq="Queso Parmesano">Queso Parmesano</button>
+      </div>
+    </div>
+
+    <div class="builder-step">
+      <h4>Extras</h4>
+      <div class="chip-group">
+        <button class="chip ${ceState.pechugaExtra?"selected":""}" id="cePechugaExtraBtn">+ Pechuga extra (${money(SALAD_CONFIG.extras.pechuga)})</button>
+        <button class="chip ${ceState.aderezoExtra?"selected":""}" id="ceAderezoExtraBtn">+ Aderezo/crutones extra (${money(SALAD_CONFIG.extras.aderezoOCrutones)})</button>
+      </div>
+    </div>
+
+    <div class="builder-step">
+      <h4>¿Alguna solicitud especial? (opcional)</h4>
+      <textarea id="ceCommentInput" class="comment-input" rows="2" placeholder="Ej. sin cebolla, aderezo aparte...">${ceState.comment}</textarea>
+    </div>
+
+    <div class="builder-footer">
+      <div class="qty-row">
+        <button class="qty-btn" id="ceQtyMinus">−</button>
+        <span style="font-family:var(--font-mono); font-weight:700;">${ceState.qty}</span>
+        <button class="qty-btn" id="ceQtyPlus">+</button>
+      </div>
+      <div class="builder-price">${money(comidaEnsaladaUnitPrice(item) * ceState.qty)}</div>
+      <button class="add-btn" id="ceAddBtn">Agregar</button>
+    </div>
+  `;
+
+  inner.querySelector("[data-close-builder]").addEventListener("click", () => toggleModal("builderModal", false));
+  inner.querySelectorAll("[data-entrada]").forEach((b) => b.addEventListener("click", () => { ceState.entrada = b.dataset.entrada; renderComidaEnsaladaBuilder(); }));
+  inner.querySelectorAll("[data-base]").forEach((b) => b.addEventListener("click", () => { ceState.base = b.dataset.base; renderComidaEnsaladaBuilder(); }));
+  inner.querySelectorAll("[data-prot]").forEach((b) => b.addEventListener("click", () => { toggleArrItem(ceState.proteinas, b.dataset.prot); renderComidaEnsaladaBuilder(); }));
+  inner.querySelectorAll("[data-top]").forEach((b) => b.addEventListener("click", () => { toggleArrItem(ceState.toppings, b.dataset.top); renderComidaEnsaladaBuilder(); }));
+  inner.querySelectorAll("[data-ader]").forEach((b) => b.addEventListener("click", () => { ceState.aderezo = b.dataset.ader; renderComidaEnsaladaBuilder(); }));
+  inner.querySelectorAll("[data-sem]").forEach((b) => b.addEventListener("click", () => {
+    const v = b.dataset.sem;
+    const idx = ceState.semillas.indexOf(v);
+    if (idx >= 0) ceState.semillas.splice(idx, 1);
+    else if (ceState.semillas.length < 2) ceState.semillas.push(v);
+    else showToast("Máximo 2 semillas");
+    renderComidaEnsaladaBuilder();
+  }));
+  inner.querySelectorAll("[data-cq]").forEach((b) => b.addEventListener("click", () => { ceState.crutonOQueso = b.dataset.cq; renderComidaEnsaladaBuilder(); }));
+  inner.querySelector("#cePechugaExtraBtn").addEventListener("click", () => { ceState.pechugaExtra = !ceState.pechugaExtra; renderComidaEnsaladaBuilder(); });
+  inner.querySelector("#ceAderezoExtraBtn").addEventListener("click", () => { ceState.aderezoExtra = !ceState.aderezoExtra; renderComidaEnsaladaBuilder(); });
+  inner.querySelector("#ceCommentInput").addEventListener("input", (e) => { ceState.comment = e.target.value; });
+  inner.querySelector("#ceQtyMinus").addEventListener("click", () => { ceState.qty = Math.max(1, ceState.qty-1); renderComidaEnsaladaBuilder(); });
+  inner.querySelector("#ceQtyPlus").addEventListener("click", () => { ceState.qty += 1; renderComidaEnsaladaBuilder(); });
+  inner.querySelector("#ceAddBtn").addEventListener("click", () => {
+    if (!ceState.entrada) return showToast("Elige tu entrada");
+    if (ceState.proteinas.length === 0) return showToast("Elige al menos 1 proteína");
+    if (ceState.toppings.length === 0) return showToast("Elige al menos 1 topping");
+    if (!ceState.aderezo) return showToast("Elige un aderezo");
+    const details = [
+      `Entrada: ${ceState.entrada}`,
+      `Base: ${ceState.base}`,
+      `Proteína: ${ceState.proteinas.join(", ")}`,
+      `Toppings: ${ceState.toppings.join(", ")}`,
+      `Aderezo: ${ceState.aderezo}`,
+    ];
+    if (ceState.semillas.length) details.push(`Semillas: ${ceState.semillas.join(", ")}`);
+    if (ceState.crutonOQueso) details.push(ceState.crutonOQueso);
+    if (ceState.pechugaExtra) details.push(`Pechuga extra (+${money(SALAD_CONFIG.extras.pechuga)})`);
+    if (ceState.aderezoExtra) details.push(`Aderezo/crutones extra (+${money(SALAD_CONFIG.extras.aderezoOCrutones)})`);
+    addToCart({
+      name: item.name,
+      categoryLabel: cat.label,
+      unitPrice: comidaEnsaladaUnitPrice(item),
+      qty: ceState.qty,
+      details,
+      comment: ceState.comment,
+    });
+    toggleModal("builderModal", false);
+  });
 }
 
 /* ---------------------------------------------------------
